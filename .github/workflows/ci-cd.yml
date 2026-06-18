@@ -61,30 +61,36 @@ jobs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Docker Hub login
-      run: |
-        echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-      env:
-        DOCKERHUB_USERNAME: sethu90
-        DOCKERHUB_TOKEN: dckr_pat_r1eXuNKkn-yL9G9GWQs6UlyTCLE
-    - name: Push Docker Image
-      run: |
-        docker tag taskflow:latest sethu90/taskflow:latest
-        docker push sethu90/taskflow:latest
-      env:
-        DOCKERHUB_USERNAME: sethu90
-        DOCKERHUB_TOKEN: dckr_pat_r1eXuNKkn-yL9G9GWQs6UlyTCLE
+    - name: Log in to Dockerhub
+      uses: docker/login-action@v3
+      with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and Verify Docker Image
-      uses: docker/build-push-action@v5
+    - name: Extract metadata for tags
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: sethu90/todoapp
+        tags: |
+            type=raw,value=latest
+            type=sha,format=short      
+
+    - name: Build and push image
+      uses: docker/build-push-action@v6
       with:
         context: .
-        push: false
-        tags: taskflow:latest
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-to: type=gha,mode=max 
+    
+    
     - name: Deploy to Railway
       run: |
         npm i -g railway
         railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
         railway up --service taskflow
+
+       
