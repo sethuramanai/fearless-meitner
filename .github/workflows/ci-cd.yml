@@ -83,3 +83,8 @@ jobs:
         tags: taskflow:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
+    - name: Deploy to Railway
+      run: |
+        npm i -g railway
+        railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
+        railway up --service taskflow
