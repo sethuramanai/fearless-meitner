@@ -66,14 +66,14 @@ jobs:
         echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
       env:
         DOCKERHUB_USERNAME: sethu90
-        DOCKERHUB_TOKEN: xQeuUQU7KE7LE906gXdpkF6hHeQ
+        DOCKERHUB_TOKEN: dckr_pat_r1eXuNKkn-yL9G9GWQs6UlyTCLE
     - name: Push Docker Image
       run: |
         docker tag taskflow:latest sethu90/taskflow:latest
         docker push sethu90/taskflow:latest
       env:
         DOCKERHUB_USERNAME: sethu90
-        DOCKERHUB_TOKEN: xQeuUQU7KE7LE906gXdpkF6hHeQ
+        DOCKERHUB_TOKEN: dckr_pat_r1eXuNKkn-yL9G9GWQs6UlyTCLE
 
     - name: Build and Verify Docker Image
       uses: docker/build-push-action@v5
