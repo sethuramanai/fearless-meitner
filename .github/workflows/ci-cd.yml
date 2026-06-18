@@ -74,6 +74,13 @@ jobs:
       env:
         DOCKERHUB_USERNAME: sethu90
         DOCKERHUB_TOKEN: xQeuUQU7KE7LE906gXdpkF6hHeQ
+    - name: Deploy to Railway
+      run: |
+        npm i -g railway
+        railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
+        railway up --service taskflow
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
     - name: Build and Verify Docker Image
       uses: docker/build-push-action@v5
