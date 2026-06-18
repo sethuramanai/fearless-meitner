@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="detail-panel glass-panel">
+    <h2 class="auth-title" style="margin-bottom: 1.5rem;"><i class="bi bi-pencil-square"></i> {{ title }}</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_title">Task Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <span class="task-due overdue" style="font-size: 0.8rem;">{{ form.title.errors.0 }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_description">Detailed Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <span class="task-due overdue" style="font-size: 0.8rem;">{{ form.description.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-row-grid">
+            <div class="form-group">
+                <label for="id_priority">Priority Level</label>
+                {{ form.priority }}
+                {% if form.priority.errors %}
+                    <span class="task-due overdue" style="font-size: 0.8rem;">{{ form.priority.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_category">Category</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <span class="task-due overdue" style="font-size: 0.8rem;">{{ form.category.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-row-grid">
+            <div class="form-group">
+                <label for="id_due_date">Due Date</label>
+                {{ form.due_date }}
+                {% if form.due_date.errors %}
+                    <span class="task-due overdue" style="font-size: 0.8rem;">{{ form.due_date.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 0.75rem;">
+                <label class="checkbox-container" style="text-transform: uppercase; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.75rem;">
+                    {{ form.completed }}
+                    <span class="checkmark" style="position: relative; margin-top: 0;"></span>
+                    Mark Completed
+                </label>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+            <a href="{% url 'task_list' %}" class="glass-btn glass-btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="glass-btn glass-btn-primary">
+                Save Task
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

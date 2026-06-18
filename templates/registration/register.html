@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="auth-panel glass-panel">
+    <div class="auth-header">
+        <h2 class="auth-title">Create Account</h2>
+        <p class="auth-subtitle">Join us to organize your daily schedule</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">{{ field.help_text }}</p>
+                {% endif %}
+                {% if field.errors %}
+                    <span class="task-due overdue" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                        {{ field.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="glass-btn glass-btn-primary" style="width: 100%; margin-top: 1rem;">
+            Register Account
+        </button>
+    </form>
+    
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Sign In</a>
+    </div>
+</div>
+{% endblock %}

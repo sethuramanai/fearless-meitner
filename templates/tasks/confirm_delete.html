@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Task - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="detail-panel glass-panel">
+    <h2 class="auth-title" style="margin-bottom: 1rem; color: var(--danger);"><i class="bi bi-exclamation-triangle-fill"></i> Delete Task</h2>
+    
+    <div class="delete-warning">
+        <p>Are you sure you want to permanently delete the task <strong>"{{ task.title }}"</strong>?</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">This action cannot be undone.</p>
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{% url 'task_list' %}" class="glass-btn glass-btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="glass-btn glass-btn-danger">
+                Delete Permanently
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

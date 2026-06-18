@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Left Column: Stats and Quick Create -->
+    <aside class="stats-panel">
+        <!-- Stats Card -->
+        <div class="glass-panel text-center">
+            <h3 class="quick-create-title" style="text-align: center; margin-bottom: 1rem;">Task Progress</h3>
+            
+            <div class="stats-circle-container">
+                <div class="progress-ring">
+                    <svg width="120" height="120">
+                        <circle class="progress-ring-circle-bg" stroke="var(--glass-border)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                        <circle class="progress-ring-circle" stroke="var(--primary)" stroke-width="8" stroke-linecap="round" fill="transparent" r="50" cx="60" cy="60" style="stroke-dasharray: 314.16 314.16; stroke-dashoffset: 314.16;"/>
+                    </svg>
+                    <div class="progress-text">
+                        <div class="progress-number" id="completion-rate-text">{{ completion_rate }}%</div>
+                        <div class="progress-label">Done</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-counters" style="margin-top: 1.5rem;">
+                <div class="stat-box">
+                    <div class="stat-val" id="active-count">{{ active_tasks }}</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="completed-count">{{ completed_tasks }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Create Form -->
+        <div class="glass-panel quick-create-panel">
+            <h3 class="quick-create-title"><i class="bi bi-plus-circle-dotted"></i> Quick Add</h3>
+            <form method="POST" action="{% url 'task_list' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_title">Task Title</label>
+                    {{ form.title }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_description">Description</label>
+                    {{ form.description }}
+                </div>
+                
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="id_priority">Priority</label>
+                        {{ form.priority }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_category">Category</label>
+                        {{ form.category }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_due_date">Due Date</label>
+                    {{ form.due_date }}
+                </div>
+                
+                <button type="submit" class="glass-btn glass-btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                    <i class="bi bi-plus-lg"></i> Add Task
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Right Column: Search, Filters, and Task List -->
+    <section class="tasks-panel">
+        <!-- Search and Header -->
+        <div class="tasks-header">
+            <h2 class="tasks-title">My Tasks ({{ tasks.count }})</h2>
+            <a href="{% url 'task_create' %}" class="glass-btn glass-btn-primary glass-btn-sm">
+                <i class="bi bi-plus-lg"></i> Detailed Task
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <form method="GET" action="{% url 'task_list' %}">
+                <!-- Keep existing filter values in search -->
+                {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+                {% if priority_filter %}<input type="hidden" name="priority" value="{{ priority_filter }}">{% endif %}
+                {% if category_filter %}<input type="hidden" name="category" value="{{ category_filter }}">{% endif %}
+                
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="q" value="{{ search_query }}" class="glass-input" placeholder="Search tasks by title or content...">
+                </div>
+            </form>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+            <!-- Status Filters -->
+            <div class="filter-section">
+                <span class="filter-title">Status</span>
+                <div class="filter-chips">
+                    <a href="?status=all&category={{ category_filter }}&priority={{ priority_filter }}&q={{ search_query }}" class="filter-chip {% if status_filter == 'all' or not status_filter %}active{% endif %}">
+                        All Tasks
+                    </a>
+                    <a href="?status=active&category={{ category_filter }}&priority={{ priority_filter }}&q={{ search_query }}" class="filter-chip {% if status_filter == 'active' %}active{% endif %}">
+                        Active
+                    </a>
+                    <a href="?status=completed&category={{ category_filter }}&priority={{ priority_filter }}&q={{ search_query }}" class="filter-chip {% if status_filter == 'completed' %}active{% endif %}">
+                        Completed
+                    </a>
+                </div>
+            </div>
+
+            <!-- Priority Filters -->
+            <div class="filter-section">
+                <span class="filter-title">Priority</span>
+                <div class="filter-chips">
+                    <a href="?status={{ status_filter }}&category={{ category_filter }}&priority=&q={{ search_query }}" class="filter-chip {% if not priority_filter %}active{% endif %}">
+                        Any
+                    </a>
+                    {% for value, name in priorities %}
+                        <a href="?status={{ status_filter }}&category={{ category_filter }}&priority={{ value }}&q={{ search_query }}" class="filter-chip {% if priority_filter == value %}active{% endif %}">
+                            {{ name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Category Filters -->
+            <div class="filter-section" style="margin-bottom: 0;">
+                <span class="filter-title">Category</span>
+                <div class="filter-chips">
+                    <a href="?status={{ status_filter }}&category=&priority={{ priority_filter }}&q={{ search_query }}" class="filter-chip {% if not category_filter %}active{% endif %}">
+                        Any
+                    </a>
+                    {% for value, name in categories %}
+                        <a href="?status={{ status_filter }}&category={{ value }}&priority={{ priority_filter }}&q={{ search_query }}" class="filter-chip {% if category_filter == value %}active{% endif %}">
+                            {{ name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Items -->
+        <div class="tasks-list">
+            {% csrf_token %}
+            {% for task in tasks %}
+                <div class="task-card {% if task.completed %}completed{% endif %}" id="task-card-{{ task.id }}">
+                    <!-- Priority color line -->
+                    <div class="task-priority-indicator task-priority-{{ task.priority }}"></div>
+                    
+                    <!-- Checkbox -->
+                    <label class="checkbox-container">
+                        <input type="checkbox" class="task-toggle-checkbox" data-task-id="{{ task.id }}" {% if task.completed %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                    </label>
+
+                    <!-- Info -->
+                    <div class="task-content">
+                        <span class="task-title-text">{{ task.title }}</span>
+                        {% if task.description %}
+                            <p class="task-desc">{{ task.description }}</p>
+                        {% endif %}
+                        <div class="task-meta">
+                            <span class="task-badge badge-{{ task.category }}">{{ task.get_category_display }}</span>
+                            
+                            {% if task.due_date %}
+                                <span class="task-due {% if task.is_overdue %}overdue{% endif %}">
+                                    <i class="bi bi-calendar-event"></i>
+                                    {% if task.is_overdue %}
+                                        Overdue ({{ task.due_date|date:"M d" }})
+                                    {% else %}
+                                        Due {{ task.due_date|date:"M d" }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="task-actions">
+                        <a href="{% url 'task_edit' task.id %}" class="action-btn action-btn-edit" title="Edit Task">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <a href="{% url 'task_delete' task.id %}" class="action-btn action-btn-delete" title="Delete Task">
+                            <i class="bi bi-trash3-fill"></i>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="glass-panel empty-state">
+                    <div class="empty-icon"><i class="bi bi-clipboard2-check"></i></div>
+                    <h3>No tasks found</h3>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        {% if search_query or status_filter != 'all' or priority_filter or category_filter %}
+                            Try relaxing your filters or search terms.
+                        {% else %}
+                            Create your first task using the panel on the left!
+                        {% endif %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
