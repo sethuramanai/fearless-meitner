@@ -45,52 +45,36 @@ jobs:
       run: |
         python manage.py test
 
-  build-docker:
+
+  build-docker-and-push:
     needs: lint-and-test
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: all
-    
-    - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Build image
+        run:  docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/todo-app:latest
 
-    - name: Log in to Dockerhub
-      uses: docker/login-action@v3
-      with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Extract metadata for tags
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: sethu90/todoapp
-        tags: |
-            type=raw,value=latest
-            type=sha,format=short      
-
-    - name: Build and push image
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max 
-    
-    
-    - name: Deploy to Railway
-      run: |
-        npm i -g railway
-        railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
-        railway up --service taskflow
-
+      - name: push image to dockerhub
+        run: |
+              docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p  ${{ secrets.DOCKERHUB_TOKEN }}
+              docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-app:latest
        
+  deploy:
+    needs: build-docker-and-push
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: |
+           railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
+           railway up --service taskflow
